@@ -9,8 +9,17 @@ const GameBoard = ({ gameState, onColumnClick, currentPlayer, isMyTurn }) => {
   // Create empty board if gameState.board doesn't exist
   const board = gameState?.board || Array(ROWS).fill(null).map(() => Array(COLS).fill(null));
 
+  // Check if a column is full
+  const isColumnFull = (colIndex) => {
+    return board[0][colIndex] !== null && board[0][colIndex] !== 0;
+  };
+
   const handleColumnClick = (colIndex) => {
-    if (!isMyTurn || gameState?.winner || gameState?.isDraw) {
+    // Prevent clicks if:
+    // - Not player's turn
+    // - Game is over (winner or draw)
+    // - Column is full
+    if (!isMyTurn || gameState?.winner || gameState?.isDraw || isColumnFull(colIndex)) {
       return;
     }
     onColumnClick(colIndex);
@@ -72,13 +81,19 @@ const GameBoard = ({ gameState, onColumnClick, currentPlayer, isMyTurn }) => {
               {row.map((cell, colIndex) => (
                 <div
                   key={`${rowIndex}-${colIndex}`}
-                  className={`w-[70px] h-[70px] rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 shadow-[inset_0_3px_8px_rgba(0,0,0,0.2)] ${
+                  className={`w-[70px] h-[70px] rounded-full flex items-center justify-center transition-all duration-200 shadow-[inset_0_3px_8px_rgba(0,0,0,0.2)] ${
                     getCellClass(cell)
                   } ${
-                    hoveredCol === colIndex && isMyTurn && !gameState?.winner && !gameState?.isDraw
+                    hoveredCol === colIndex && isMyTurn && !gameState?.winner && !gameState?.isDraw && !isColumnFull(colIndex)
                       ? 'bg-white scale-105'
                       : ''
-                  } ${!cell ? 'bg-white/30' : ''}`}
+                  } ${!cell ? 'bg-white/30' : ''} ${
+                    isMyTurn && !gameState?.winner && !gameState?.isDraw && !isColumnFull(colIndex) && rowIndex === 0
+                      ? 'cursor-pointer hover:ring-2 hover:ring-white/50'
+                      : isColumnFull(colIndex) && rowIndex === 0
+                      ? 'cursor-not-allowed opacity-60'
+                      : ''
+                  }`}
                   onClick={() => handleColumnClick(colIndex)}
                   onMouseEnter={() => setHoveredCol(colIndex)}
                   onMouseLeave={() => setHoveredCol(null)}

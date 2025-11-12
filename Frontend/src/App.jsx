@@ -103,7 +103,13 @@ function App() {
     // Error event
     socketService.onError((error) => {
       console.error('Socket error:', error);
-      alert(`Error: ${error.message}`);
+
+      // Only show alerts for critical errors, not game logic errors
+      const criticalErrors = ['DATABASE_ERROR', 'VALIDATION_ERROR', 'JOIN_ERROR'];
+      if (criticalErrors.includes(error.errorCode)) {
+        alert(`Error: ${error.message}`);
+      }
+      // Game errors like "Not your turn", "Column full" are already prevented in UI
     });
   };
 
@@ -139,7 +145,7 @@ function App() {
     socketService.makeMove(gameState.gameId, colIndex, (response) => {
       if (response && response.error) {
         console.error('Failed to make move:', response.error);
-        alert(`Invalid move: ${response.error.message}`);
+        // Don't show alert - error is already handled by socket error listener
       }
     });
   };
